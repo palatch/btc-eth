@@ -2,198 +2,162 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>แจ้งเตือนคริปโต Bitkub (1,000 บาท + ซื้อ/ขาย + กำไรสุทธิ)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบแจ้งเตือนและบันทึกการซื้อขายเหรียญ</title>
   <style>
     body {
+      background: #000;
       font-family: 'Kanit', sans-serif;
-      background: radial-gradient(circle at top, #0f0f0f, #050505);
-      color: #e0ffe0;
+      color: #00ffcc;
+      margin: 0;
+      padding: 0;
     }
-    h1 {
-      color: #00ff66;
+    .container {
+      width: 100%;
+      max-width: 100%;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+    h1, h2 {
+      color: #00ffff;
       text-align: center;
-      text-shadow: 0 0 8px #00ff66;
+      margin-bottom: 10px;
     }
-    .box {
+    .section {
       background: #111;
-      border: 2px solid #00ff66;
-      border-radius: 12px;
-      padding: 16px;
-      margin: 20px auto;
-      max-width: 800px;
-      box-shadow: 0 0 15px rgba(0,255,100,0.3);
+      border: 2px solid #00ff99;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
     }
-    .signal {
-      padding: 12px;
-      font-weight: bold;
+    .no-border {
+      border: none !important;
+    }
+    label, input, button, select {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      font-size: 1em;
+    }
+    input[type="checkbox"] {
+      width: auto;
+      display: inline-block;
+      margin-right: 10px;
+    }
+    .btn {
+      background: #00cc66;
+      color: #fff;
+      padding: 10px;
+      border: none;
       border-radius: 8px;
+      font-size: 1.1em;
+      margin-top: 10px;
     }
-    .buy { background: #1b3c1b; color: #aaffaa; border: 1px solid #00ff66; }
-    .sell { background: #3c1b1b; color: #ffaaaa; border: 1px solid #ff4444; }
-    .wait { background: #33331b; color: #ffffaa; border: 1px solid #ffff66; }
-    table {
+    .table-log {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
+      color: #ffffff;
     }
-    th, td {
-      border: 1px solid #555;
+    .table-log th, .table-log td {
+      border: 1px solid #00cc99;
       padding: 8px;
       text-align: center;
     }
-    th {
-      background: #222;
-      color: #00ffcc;
-    }
-    .highlight {
-      color: #00ff99;
-      font-weight: bold;
-      font-size: 1.1em;
-    }
-    button {
-      padding: 10px 20px;
-      background: linear-gradient(to right, #00c853, #64dd17);
-      border: none;
-      border-radius: 6px;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      margin-right: 6px;
-    }
-    input {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #666;
-      background: #222;
-      color: #fff;
-      margin-top: 10px;
+    .profit-total {
+      color: #00ff00;
+      font-size: 1.2em;
+      margin-top: 15px;
     }
   </style>
 </head>
 <body>
-<h1>📊 แจ้งเตือนซื้อขาย BTC/ETH จาก Bitkub (งบ 1,000 บาท)</h1>
+  <div class="container">
+    <h1>📈 ระบบแจ้งเตือนและบันทึกซื้อขาย</h1>
 
-<div class="box">
-  <h2>💰 BTC/THB</h2>
-  <div id="btcPrice">กำลังโหลด...</div>
-  <div id="btcSignal" class="signal wait">กำลังประเมิน...</div>
-  <div id="btcDetail"></div>
-  <div>
-    <input type="number" id="btcQty" placeholder="จำนวน BTC">
-    <button onclick="logTrade('BTC', 'buy')">บันทึกการซื้อ BTC</button>
-    <button onclick="logTrade('BTC', 'sell')">บันทึกการขาย BTC</button>
+    <div class="section">
+      <label><input type="checkbox" id="hasOldCoin" onchange="toggleOldCost()"> 📌 มีเหรียญเก่าที่ถืออยู่</label>
+      <div id="oldCostBox" style="display:none;">
+        <label for="oldCost">ต้นทุนเฉลี่ย (บาท):</label>
+        <input type="number" id="oldCost" placeholder="กรอกต้นทุนเหรียญที่มีอยู่" />
+      </div>
+
+      <label for="amount">จำนวน (เช่น BTC หรือ ETH):</label>
+      <input type="number" id="amount" step="any" />
+
+      <button class="btn" onclick="logBuy()">บันทึกการซื้อ</button>
+      <button class="btn" onclick="logSell()">บันทึกการขาย</button>
+    </div>
+
+    <div class="section no-border">
+      <h2>📋 บันทึกการซื้อขาย</h2>
+      <table class="table-log" id="logTable">
+        <thead>
+          <tr>
+            <th>วันเวลา</th>
+            <th>เหรียญ</th>
+            <th>ประเภท</th>
+            <th>ราคา</th>
+            <th>จำนวน</th>
+            <th>รวม (บาท)</th>
+            <th>กำไรสุทธิ</th>
+          </tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+      </table>
+      <div class="profit-total" id="totalProfit">✅ รวมกำไรสุทธิ: 0 บาท</div>
+    </div>
   </div>
-</div>
 
-<div class="box">
-  <h2>💰 ETH/THB</h2>
-  <div id="ethPrice">กำลังโหลด...</div>
-  <div id="ethSignal" class="signal wait">กำลังประเมิน...</div>
-  <div id="ethDetail"></div>
-  <div>
-    <input type="number" id="ethQty" placeholder="จำนวน ETH">
-    <button onclick="logTrade('ETH', 'buy')">บันทึกการซื้อ ETH</button>
-    <button onclick="logTrade('ETH', 'sell')">บันทึกการขาย ETH</button>
-  </div>
-</div>
+  <script>
+    let totalProfit = 0;
+    let lastBuy = null;
 
-<div class="box">
-  <h2>📋 บันทึกการซื้อขาย</h2>
-  <table id="tradeLog">
-    <thead>
-      <tr>
-        <th>วันเวลา</th><th>เหรียญ</th><th>ประเภท</th><th>ราคา</th><th>จำนวน</th><th>รวม (บาท)</th><th>กำไรสุทธิ</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <div style="margin-top:10px;font-size:1.2em;">
-    💹 <b>รวมกำไรสุทธิ:</b> <span id="netProfit">0</span> บาท
-  </div>
-</div>
+    function toggleOldCost() {
+      const box = document.getElementById('oldCostBox');
+      box.style.display = document.getElementById('hasOldCoin').checked ? 'block' : 'none';
+    }
 
-<script>
-const budget = 1000;
-const feeRate = 0.0025;
-let net = 0;
-const buyMap = {};
+    function logBuy() {
+      const now = new Date().toLocaleString('th-TH');
+      const amt = parseFloat(document.getElementById('amount').value);
+      const price = 37; // ราคาสมมุติ
+      const coin = "BTC";
+      lastBuy = { price, amount: amt };
 
-function fetchBitkub(symbol, priceID, signalID, detailID, low, high) {
-  fetch("https://api.bitkub.com/api/market/ticker?sym=" + symbol)
-    .then(r => r.json())
-    .then(data => {
-      const price = data[symbol].last;
-      let trend = "⏸ คงที่";
-      const key = "prev_" + symbol;
-      const prev = localStorage.getItem(key);
-      if (prev) {
-        const prevPrice = parseFloat(prev);
-        if (price > prevPrice) trend = "🔼 แนวโน้มขึ้น";
-        else if (price < prevPrice) trend = "🔽 แนวโน้มลง";
-      }
-      localStorage.setItem(key, price);
-      document.getElementById(priceID).innerHTML = `📈 ราคาเหรียญล่าสุด: <span class="highlight">${price.toLocaleString()} บาท</span><br>📉 แนวโน้ม: ${trend}`;
-      const feeBuy = budget * feeRate;
-      const coin = (budget / price).toFixed(6);
-      const revenue = coin * price;
-      const feeSell = revenue * feeRate;
-      const netProfit = revenue - budget - feeBuy - feeSell;
-      document.getElementById(detailID).innerHTML = `
-        📌 ซื้อได้ ≈ ${coin} เหรียญ<br>
-        💸 ค่าธรรมเนียมซื้อ ≈ ${feeBuy.toFixed(2)} บาท<br>
-        💸 ค่าธรรมเนียมขาย ≈ ${feeSell.toFixed(2)} บาท<br>
-        ✅ กำไรสุทธิประมาณ ≈ <b>${netProfit.toFixed(2)}</b> บาท
+      const total = (amt * price).toFixed(2);
+      appendRow(now, coin, "BUY", price, amt, total, "");
+    }
+
+    function logSell() {
+      const now = new Date().toLocaleString('th-TH');
+      const amt = parseFloat(document.getElementById('amount').value);
+      const price = 37; // ราคาสมมุติ
+      const coin = "BTC";
+
+      let cost = lastBuy?.price || parseFloat(document.getElementById('oldCost').value || 0);
+      let netProfit = ((price - cost) * amt - 5).toFixed(2); // -5 ค่าธรรมเนียม
+
+      totalProfit += parseFloat(netProfit);
+      const total = (amt * price).toFixed(2);
+
+      appendRow(now, coin, "SELL", price, amt, total, netProfit);
+      document.getElementById("totalProfit").innerText = "✅ รวมกำไรสุทธิ: " + totalProfit.toFixed(2) + " บาท";
+    }
+
+    function appendRow(date, coin, type, price, amt, total, profit) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${date}</td>
+        <td>${coin}</td>
+        <td>${type}</td>
+        <td>${price}</td>
+        <td>${amt}</td>
+        <td>${total}</td>
+        <td>${profit}</td>
       `;
-      const sig = document.getElementById(signalID);
-      if (price <= low) {
-        sig.innerHTML = "🔴 ราคาต่ำกว่าจุดซื้อ → ควรซื้อ";
-        sig.className = "signal buy";
-      } else if (price >= high) {
-        sig.innerHTML = "🔵 ราคาสูงกว่าจุดขาย → ควรขาย";
-        sig.className = "signal sell";
-      } else {
-        sig.innerHTML = "⏳ ราคายังไม่ถึงจุดซื้อ/ขาย";
-        sig.className = "signal wait";
-      }
-    });
-}
-
-function logTrade(symbol, type) {
-  const qty = parseFloat(document.getElementById(symbol.toLowerCase() + "Qty").value);
-  if (!qty || qty <= 0) return alert("กรุณาใส่จำนวนเหรียญที่ถูกต้อง");
-  const priceText = document.getElementById(symbol.toLowerCase() + "Price").innerText;
-  const match = priceText.match(/([\d,]+) บาท/);
-  const price = parseFloat(match[1].replace(/,/g, ''));
-  const total = qty * price;
-  const now = new Date().toLocaleString("th-TH");
-  let profit = "";
-
-  if (type === "buy") {
-    buyMap[symbol] = { qty, price, total };
-  } else if (type === "sell" && buyMap[symbol]) {
-    const buy = buyMap[symbol];
-    const feeBuy = buy.total * feeRate;
-    const feeSell = total * feeRate;
-    const gain = total - buy.total - feeBuy - feeSell;
-    profit = gain.toFixed(2);
-    net += gain;
-    buyMap[symbol] = null;
-    document.getElementById("netProfit").innerText = net.toFixed(2);
-  }
-
-  const row = `<tr>
-    <td>${now}</td><td>${symbol}</td><td>${type.toUpperCase()}</td>
-    <td>${price.toLocaleString()}</td><td>${qty}</td><td>${total.toFixed(2)}</td>
-    <td>${profit}</td>
-  </tr>`;
-  document.querySelector("#tradeLog tbody").innerHTML += row;
-}
-
-fetchBitkub("THB_BTC", "btcPrice", "btcSignal", "btcDetail", 2100000, 2300000);
-fetchBitkub("THB_ETH", "ethPrice", "ethSignal", "ethDetail", 95000, 115000);
-</script>
+      document.getElementById("logBody").appendChild(row);
+    }
+  </script>
 </body>
 </html>
