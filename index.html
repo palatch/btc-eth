@@ -3,7 +3,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>แจ้งเตือนคริปโต Bitkub (5,000 บาท)</title>
+  <title>แจ้งเตือนคริปโต Bitkub (งบ 1,000 บาท)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
@@ -71,28 +71,16 @@
       color: #fff;
       margin-top: 10px;
     }
-    body { font-family: Tahoma, sans-serif; background: #111; color: #eee; padding: 20px; }
-    h1 { text-align: center; color: #00ffcc; }
-    .box { background: #222; border-radius: 10px; padding: 15px; margin: 20px auto; max-width: 700px; }
-    .signal { padding: 10px; font-weight: bold; border-radius: 8px; }
-    .buy { background: #330000; color: #ff9999; }
-    .sell { background: #003333; color: #66ffff; }
-    .wait { background: #333300; color: #ffff66; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #666; padding: 8px; text-align: center; }
-    th { background: #333; }
-    .highlight { color: #00ff99; font-weight: bold; }
   </style>
 </head>
 <body>
-<h1>📊 แจ้งเตือนซื้อขาย BTC/ETH จาก Bitkub (งบ 5,000 บาท)</h1>
+<h1>📊 แจ้งเตือนซื้อขาย BTC/ETH จาก Bitkub (งบ 1,000 บาท)</h1>
 
 <div class="box">
   <h2>💰 BTC/THB</h2>
   <div id="btcPrice">กำลังโหลด...</div>
   <div id="btcSignal" class="signal wait">กำลังประเมิน...</div>
   <div id="btcDetail"></div>
-
   <div>
     <input type="number" id="btcQty" placeholder="จำนวน BTC">
     <button onclick="logTrade('BTC')">บันทึกการซื้อ BTC</button>
@@ -103,7 +91,7 @@
   <h2>💰 ETH/THB</h2>
   <div id="ethPrice">กำลังโหลด...</div>
   <div id="ethSignal" class="signal wait">กำลังประเมิน...</div>
-  <div id="ethDetail">
+  <div id="ethDetail"></div>
   <div>
     <input type="number" id="ethQty" placeholder="จำนวน ETH">
     <button onclick="logTrade('ETH')">บันทึกการซื้อ ETH</button>
@@ -123,22 +111,7 @@
 </div>
 
 <script>
-function logTrade(symbol) {
-  const id = symbol.toLowerCase() + "Qty";
-  const qty = parseFloat(document.getElementById(id).value);
-  if (!qty || qty <= 0) return alert("กรุณาใส่จำนวนเหรียญที่ถูกต้อง");
-
-  const priceText = document.getElementById(symbol.toLowerCase() + "Price").innerText;
-  const match = priceText.match(/([\d,]+) บาท/);
-  const price = parseFloat(match[1].replace(/,/g, ''));
-  const total = (qty * price).toFixed(2);
-  const now = new Date().toLocaleString("th-TH");
-
-  const row = `<tr><td>${now}</td><td>${symbol}</td><td>${price.toLocaleString()}</td><td>${qty}</td><td>${total}</td></tr>`;
-  document.querySelector("#tradeLog tbody").innerHTML += row;
-}
-
-const budget = 5000;
+const budget = 1000;
 const feeRate = 0.0025; // 0.25% ต่อรายการ
 const BTC_BUY = 2100000;
 const BTC_SELL = 2300000;
@@ -176,6 +149,21 @@ function fetchBitkub(symbol, labelPrice, labelSignal, labelDetail, low, high) {
         signalBox.className = "signal wait";
       }
     });
+}
+
+function logTrade(symbol) {
+  const id = symbol.toLowerCase() + "Qty";
+  const qty = parseFloat(document.getElementById(id).value);
+  if (!qty || qty <= 0) return alert("กรุณาใส่จำนวนเหรียญที่ถูกต้อง");
+
+  const priceText = document.getElementById(symbol.toLowerCase() + "Price").innerText;
+  const match = priceText.match(/([\d,]+) บาท/);
+  const price = parseFloat(match[1].replace(/,/g, ''));
+  const total = (qty * price).toFixed(2);
+  const now = new Date().toLocaleString("th-TH");
+
+  const row = `<tr><td>${now}</td><td>${symbol}</td><td>${price.toLocaleString()}</td><td>${qty}</td><td>${total}</td></tr>`;
+  document.querySelector("#tradeLog tbody").innerHTML += row;
 }
 
 fetchBitkub("THB_BTC", "btcPrice", "btcSignal", "btcDetail", BTC_BUY, BTC_SELL);
