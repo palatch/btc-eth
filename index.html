@@ -3,161 +3,155 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ระบบแจ้งเตือนและบันทึกการซื้อขายเหรียญ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bitkub เทรดคริปโต</title>
   <style>
     body {
-      background: #000;
-      font-family: 'Kanit', sans-serif;
-      color: #00ffcc;
+      background-color: #0f0f0f;
+      color: #fff;
+      font-family: 'Sarabun', sans-serif;
       margin: 0;
-      padding: 0;
+      padding: 20px;
     }
-    .container {
-      width: 100%;
-      max-width: 100%;
-      padding: 15px;
-      box-sizing: border-box;
+    .card {
+      background-color: #1e1e1e;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ce9c;
     }
     h1, h2 {
-      color: #00ffff;
-      text-align: center;
-      margin-bottom: 10px;
+      color: #00ce9c;
     }
-    .section {
-      background: #111;
-      border: 2px solid #00ff99;
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-    .no-border {
-      border: none !important;
-    }
-    label, input, button, select {
-      display: block;
-      width: 100%;
-      margin: 8px 0;
-      font-size: 1em;
-    }
-    input[type="checkbox"] {
-      width: auto;
-      display: inline-block;
-      margin-right: 10px;
-    }
-    .btn {
-      background: #00cc66;
-      color: #fff;
-      padding: 10px;
+    input, button {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
       border: none;
-      border-radius: 8px;
-      font-size: 1.1em;
-      margin-top: 10px;
     }
-    .table-log {
+    button {
+      background: #00b894;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    table { font-size: 12px; display: block; overflow-x: auto; white-space: nowrap;
       width: 100%;
       border-collapse: collapse;
-      color: #ffffff;
+      margin-top: 15px;
     }
-    .table-log th, .table-log td {
-      border: 1px solid #00cc99;
-      padding: 8px;
+    th, td {
+      padding: 10px;
+      border: 1px solid #636e72;
       text-align: center;
     }
-    .profit-total {
-      color: #00ff00;
-      font-size: 1.2em;
-      margin-top: 15px;
+    .profit {
+      color: #00cec9;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📈 ระบบแจ้งเตือนและบันทึกซื้อขาย</h1>
+  <div class="card">
+    <h1>📈 ระบบเทรดคริปโต Bitkub (ครบทุกฟีเจอร์)</h1>
+    <p>📌 กรุณาเริ่มจากการ <b>ซื้อครั้งแรกอย่างน้อย 1,000 บาท</b> เพื่อให้ระบบสามารถคำนวณกำไรสุทธิได้ถูกต้อง</p>
+    <p>⏱ ระบบนี้ใช้ข้อมูลราคาจาก Bitkub และอัปเดตอัตโนมัติทุก 60 วินาที</p>
+  </div>
 
-    <div class="section">
-      <label><input type="checkbox" id="hasOldCoin" onchange="toggleOldCost()"> 📌 มีเหรียญเก่าที่ถืออยู่</label>
-      <div id="oldCostBox" style="display:none;">
-        <label for="oldCost">ต้นทุนเฉลี่ย (บาท):</label>
-        <input type="number" id="oldCost" placeholder="กรอกต้นทุนเหรียญที่มีอยู่" />
-      </div>
+  <div class="card">
+    <h2>🪙 ซื้อ / ขาย BTC (THB)</h2>
+    <label for="amount">ยอดเงิน (บาท):</label>
+    <input id="amount" type="number" value="1000" />
+    <button>ซื้อ</button>
+    <button>ขาย</button>
 
-      <label for="amount">จำนวน (เช่น BTC หรือ ETH):</label>
-      <input type="number" id="amount" step="any" />
+    <p>📉 ราคาปัจจุบัน BTC: <span id="btc-price">กำลังโหลด...</span></p>
+    <p>📊 แนวโน้ม: -</p>
+    <p>📅 สถานะตลาด: -</p>
+    <p class="profit">💰 กำไรรวม: 0 บาท</p>
+  </div>
 
-      <button class="btn" onclick="logBuy()">บันทึกการซื้อ</button>
-      <button class="btn" onclick="logSell()">บันทึกการขาย</button>
-    </div>
-
-    <div class="section no-border">
-      <h2>📋 บันทึกการซื้อขาย</h2>
-      <table class="table-log" id="logTable">
-        <thead>
-          <tr>
-            <th>วันเวลา</th>
-            <th>เหรียญ</th>
-            <th>ประเภท</th>
-            <th>ราคา</th>
-            <th>จำนวน</th>
-            <th>รวม (บาท)</th>
-            <th>กำไรสุทธิ</th>
-          </tr>
-        </thead>
-        <tbody id="logBody"></tbody>
-      </table>
-      <div class="profit-total" id="totalProfit">✅ รวมกำไรสุทธิ: 0 บาท</div>
-    </div>
+  <div class="card">
+    <h2>📋 ประวัติการซื้อขาย</h2>
+    <table style="font-size: 8px;">
+      <thead>
+        <tr>
+          <th>เวลาซื้อ/ขาย</th>
+          <th>ประเภท</th>
+          <th>ราคา</th>
+          <th>ยอดเงิน</th>
+          <th>เหรียญ</th>
+          <th>กำไร</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>31/07/25 13:26</td>
+          <td>BUY</td>
+          <td>37</td>
+          <td>1000</td>
+          <td>0.00013</td>
+          <td>-5</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <script>
-    let totalProfit = 0;
-    let lastBuy = null;
-
-    function toggleOldCost() {
-      const box = document.getElementById('oldCostBox');
-      box.style.display = document.getElementById('hasOldCoin').checked ? 'block' : 'none';
+    function fetchPrice() {
+      fetch('https://api.bitkub.com/api/market/ticker?sym=BTC_THB')
+        .then(res => res.json())
+        .then(data => {
+          const price = data['BTC_THB'].last;
+          document.getElementById('btc-price').innerText = price.toLocaleString() + ' บาท';
+        })
+        .catch(() => {
+          document.getElementById('btc-price').innerText = 'ไม่สามารถโหลดราคาได้';
+        });
     }
 
-    function logBuy() {
-      const now = new Date().toLocaleString('th-TH');
-      const amt = parseFloat(document.getElementById('amount').value);
-      const price = 37; // ราคาสมมุติ
-      const coin = "BTC";
-      lastBuy = { price, amount: amt };
+    fetchPrice();
+    setInterval(fetchPrice, 60000); // อัปเดตทุก 60 วินาที
+  </script>
 
-      const total = (amt * price).toFixed(2);
-      appendRow(now, coin, "BUY", price, amt, total, "");
-    }
+  <script>
+    const historyKey = 'bitkub_trade_history';
+    const tableBody = document.querySelector('tbody');
 
-    function logSell() {
-      const now = new Date().toLocaleString('th-TH');
-      const amt = parseFloat(document.getElementById('amount').value);
-      const price = 37; // ราคาสมมุติ
-      const coin = "BTC";
+    // โหลดประวัติเมื่อเปิดหน้าเว็บ
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem(historyKey);
+      if (saved) {
+        tableBody.innerHTML = saved;
+      }
+    });
 
-      let cost = lastBuy?.price || parseFloat(document.getElementById('oldCost').value || 0);
-      let netProfit = ((price - cost) * amt - 5).toFixed(2); // -5 ค่าธรรมเนียม
-
-      totalProfit += parseFloat(netProfit);
-      const total = (amt * price).toFixed(2);
-
-      appendRow(now, coin, "SELL", price, amt, total, netProfit);
-      document.getElementById("totalProfit").innerText = "✅ รวมกำไรสุทธิ: " + totalProfit.toFixed(2) + " บาท";
-    }
-
-    function appendRow(date, coin, type, price, amt, total, profit) {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${date}</td>
-        <td>${coin}</td>
-        <td>${type}</td>
-        <td>${price}</td>
-        <td>${amt}</td>
-        <td>${total}</td>
-        <td>${profit}</td>
+    // ฟังก์ชันจำลองการบันทึกซื้อขาย
+    function addMockRow(type = "BUY") {
+      const now = new Date();
+      const date = now.toLocaleDateString('th-TH');
+      const time = now.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+      const row = `
+        <tr>
+          <td>${date} ${time}</td>
+          <td>${type}</td>
+          <td>37000</td>
+          <td>1000</td>
+          <td>0.000027</td>
+          <td>+15</td>
+        </tr>
       `;
-      document.getElementById("logBody").appendChild(row);
+      tableBody.innerHTML += row;
+      localStorage.setItem(historyKey, tableBody.innerHTML);
     }
+
+    // เพิ่มปุ่มจำลอง (เฉพาะทดสอบ)
+    const testBtn = document.createElement('button');
+    testBtn.innerText = 'เพิ่มรายการจำลอง';
+    testBtn.style.margin = '10px';
+    testBtn.onclick = () => addMockRow("BUY");
+    document.body.appendChild(testBtn);
   </script>
 </body>
+
 </html>
